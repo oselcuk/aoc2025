@@ -1,6 +1,6 @@
+load "../shared/shared.rb"
 
-
-ranges, ids = File.read(ARGV[0]).split("\n\n").map{|text| text.split("\n")}
+ranges, ids = File.readlines(ARGV[0], chomp: true).split_at("")
 ids = ids.map &:to_i
 
 def combine_range(a, b) [a.first, b.first].min .. [a.last, b.last].max end

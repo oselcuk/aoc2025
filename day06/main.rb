@@ -1,3 +1,4 @@
+load "../shared/shared.rb"
 
 def apply_op(nums, op)
   nums.map(&:to_i).reduce(op == "*" ? :* : :+)
@@ -13,9 +14,9 @@ part2 = raw_lines[...-1]
   .transpose
   .map(&:join)
   .map(&:strip)
-  .slice_after("")
+  .split_at("")
   .zip(raw_lines[-1].split)
-  .map { |nums, op| apply_op(nums - [""], op) }
+  .map { |nums, op| apply_op(nums, op) }
   .sum
 
 puts "Part 2: #{part2}"
