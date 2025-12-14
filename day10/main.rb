@@ -20,24 +20,26 @@ end
 
 puts "Part 1: #{part1.sum}"
 
-
-def search(buttons, target, left, last_used=0)
-  # p "Target: #{target}, left: #{left}"
-  found = target.all?{|i| i == 0}
-  wrong = target.any?{|i| i < 0}
-  if left == 0 || found || wrong then
-    found
-  else
-    buttons.lazy.each_with_index.drop(last_used).any? do |is, used|
-      new_target = target.clone
-      is.each{|i| new_target[i]-=1}
-      search buttons, new_target, left-1, used
-    end
-  end
-end
-
 part2 = machines.map do |machine|
-  (1..).lazy.filter{|count| search(machine.buttons, machine.joltage, count)}.first
+  File.open("model.mod", "w") do |model|
+    vars = machine.buttons.each_index.map{|i| "x#{i}"}
+    sum_expr = vars.join(' + ')
+    eqs = machine.joltage.each_with_index.map do |joltage, ji|
+      eq = machine.buttons.each_with_index
+        .filter_map{|buttons, bi| "x#{bi}" if buttons.include?(ji)}
+        .join(" + ")
+      eq += " = #{joltage}"
+    end
+    vars.each{|var| model.puts("var #{var} >= 0, integer;")}
+    model.puts("minimize obj: #{sum_expr};")
+    eqs.each_with_index{|eq, i| model.puts("s.t. c#{i}: #{eq};")}
+    model.puts("solve;")
+    model.puts("display #{sum_expr};")
+    model.puts("end;")
+  end
+  # Requires glpsol: pacman -S glpk
+  system("glpsol --math model.mod --display model.out", out: File::NULL)
+  File.readlines("model.out").last.to_i
 end.sum
 
 puts "Part 2: #{part2}"
